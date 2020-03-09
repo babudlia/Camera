@@ -17,7 +17,7 @@ import operator
 import face_recognition
 
 #from sklearn.decomposition import PCA
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 known_faces = {}
 known_encs = []
