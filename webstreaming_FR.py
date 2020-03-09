@@ -33,136 +33,163 @@ lock = threading.Lock()
 # initialize a flask object
 app = Flask(__name__)
 
+def gstreamer_pipeline(
+    capture_width=1280,
+    capture_height=720,
+    display_width=1280,
+    display_height=720,
+    framerate=60,
+    flip_method=0,
+):
+    return (
+        "nvarguscamerasrc ! "
+        "video/x-raw(memory:NVMM), "
+        "width=(int)%d, height=(int)%d, "
+        "format=(string)NV12, framerate=(fraction)%d/1 ! "
+        "nvvidconv flip-method=%d ! "
+        "video/x-raw, width=(int)%d, height=(int)%d, format=(string)BGRx ! "
+        "videoconvert ! "
+        "video/x-raw, format=(string)BGR ! appsink"
+        % (
+            capture_width,
+            capture_height,
+            framerate,
+            flip_method,
+            display_width,
+            display_height,
+        )
+    )
 # initialize the video stream and allow the camera sensor to
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
-vs = VideoStream(src=0).start()
+#vs = VideoStream(src=0).start()
+vs = VideoStream(gstreamer_pipeline(flip_method=0), cv2.CAP_GSTREAMER)
 time.sleep(0.0)
 
 @app.route("/")
 def index():
-	# return the rendered template
-	return render_template("index_fr.html")
+    # return the rendered template
+    return render_template("index_fr.html")
 
 def detect_faces(frameCount):
-	# grab global references to the video stream, output frame, and
-	# lock variables
-	global vs, outputFrame, lock, known_faces, known_encs, lastEncoding
+    # grab global references to the video stream, output frame, and
+    # lock variables
+    global vs, outputFrame, lock, known_faces, known_encs, lastEncoding
 
-	# loop over frames from the video stream
-	while True:
-		# read the next frame from the video stream, resize it,
-		# convert the frame to grayscale, and blur it
-		frame = vs.read()
-		frame = imutils.resize(frame, width=800)
+    # loop over frames from the video stream
+    while True:
+        # read the next frame from the video stream, resize it,
+        # convert the frame to grayscale, and blur it
+        frame = vs.read()
+        frame = imutils.resize(frame, width=800)
 
-		# grab the current timestamp and draw it on the frame
-		#timestamp = datetime.datetime.now()
+        # grab the current timestamp and draw it on the frame
+        #timestamp = datetime.datetime.now()
 		#cv2.putText(frame, timestamp.strftime(
 		#	"%A %d %B %Y %I:%M:%S%p"), (10, frame.shape[0] - 10),
 		#	cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1)
 
-		enc = face_recognition.face_encodings(frame)
-		face_locations = face_recognition.face_locations(frame)
-		ix = 0
-		for fl in face_locations:
-			cv2.rectangle(frame, (fl[3], fl[0]), (fl[1], fl[2]), (0, 0, 255), 2)
-			cv2.rectangle(frame, (fl[3]-1, fl[0]-22), (fl[1]+1, fl[0]), (0, 0, 255), -1)
+        enc = face_recognition.face_encodings(frame)
+        face_locations = face_recognition.face_locations(frame)
+        ix = 0
+        for fl in face_locations:
+            cv2.rectangle(frame, (fl[3], fl[0]), (fl[1], fl[2]), (0, 0, 255), 2)
+            cv2.rectangle(frame, (fl[3]-1, fl[0]-22), (fl[1]+1, fl[0]), (0, 0, 255), -1)
 
-			name = "Unknown"
-			res = face_recognition.face_distance(known_encs, enc[ix]).tolist()
-			if min(res) < 0.6:
-				name = known_names[res.index(min(res))]
+            name = "Unknown"
+            res = face_recognition.face_distance(known_encs, enc[ix]).tolist()
+            if min(res) < 0.6:
+                name = known_names[res.index(min(res))]
 
-			print(list(zip(known_names, res)))
+            print(list(zip(known_names, res)))
 
-			font = cv2.FONT_HERSHEY_SIMPLEX
-			cv2.putText(frame, name, (fl[3]+3, fl[0]-5), font, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            cv2.putText(frame, name, (fl[3]+3, fl[0]-5), font, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
 
-			lastEncoding = enc[0].tolist()
+            lastEncoding = enc[0].tolist()
 
-			ix += 1
-		if len(face_locations) == 0:
-			lastEncoding = []
-		
-		# acquire the lock, set the output frame, and release the
-		# lock
-		with lock:
-			outputFrame = frame.copy()
+            ix += 1
+        if len(face_locations) == 0:
+            lastEncoding = []
+
+        # acquire the lock, set the output frame, and release the
+        # lock
+        with lock:
+            outputFrame = frame.copy()
 		
 def generate():
-	# grab global references to the output frame and lock variables
-	global outputFrame, lock
+    # grab global references to the output frame and lock variables
+    global outputFrame, lock
 
-	# loop over frames from the output stream
-	while True:
-		# wait until the lock is acquired
-		with lock:
-			# check if the output frame is available, otherwise skip
-			# the iteration of the loop
-			if outputFrame is None:
-				continue
+    # loop over frames from the output stream
+    while True:
+        # wait until the lock is acquired
+        with lock:
+            # check if the output frame is available, otherwise skip
+            # the iteration of the loop
+            if outputFrame is None:
+                continue
 
-			# encode the frame in JPEG format
-			(flag, encodedImage) = cv2.imencode(".jpg", outputFrame)
+            # encode the frame in JPEG format
+            (flag, encodedImage) = cv2.imencode(".jpg", outputFrame)
 
-			# ensure the frame was successfully encoded
-			if not flag:
-				continue
+            # ensure the frame was successfully encoded
+            if not flag:
+                    continue
 
-		# yield the output frame in the byte format
-		yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + 
-			bytearray(encodedImage) + b'\r\n')
+        # yield the output frame in the byte format
+        yield(b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' +
+            bytearray(encodedImage) + b'\r\n')
 
 @app.route("/video_feed")
 def video_feed():
-	# return the response generated along with the specific media
-	# type (mime type)
-	return Response(generate(),
-		mimetype = "multipart/x-mixed-replace; boundary=frame")
+    # return the response generated along with the specific media
+    # type (mime type)
+    return Response(generate(),
+        mimetype = "multipart/x-mixed-replace; boundary=frame")
 
 @app.route("/last_encoding")
 def last_encoding():
-	global lastEncoding
+    global lastEncoding
 
-	if len(lastEncoding) == 0:
-		return Response("[]", mimetype = "text/plain")	
+    if len(lastEncoding) == 0:
+        return Response("[]", mimetype = "text/plain")
 
-	# return the response generated along with the specific media
-	# type (mime type)
-	return Response(str(lastEncoding[0:5]) + " ... " + str(lastEncoding[-5:]), mimetype = "text/plain")
+    # return the response generated along with the specific media
+    # type (mime type)
+    return Response(str(lastEncoding[0:5]) + " ... " + str(lastEncoding[-5:]), mimetype = "text/plain")
 
 # check to see if this is the main thread of execution
 if __name__ == '__main__':
-	# construct the argument parser and parse command line arguments
-	ap = argparse.ArgumentParser()
-	ap.add_argument("-i", "--ip", type=str, required=True,
+    # construct the argument parser and parse command line arguments
+    ap = argparse.ArgumentParser()
+    ap.add_argument("-i", "--ip", type=str, required=True,
 		help="ip address of the device")
-	ap.add_argument("-o", "--port", type=int, required=True,
+    ap.add_argument("-o", "--port", type=int, required=True,
 		help="ephemeral port number of the server (1024 to 65535)")
-	ap.add_argument("-f", "--frame-count", type=int, default=32,
+    ap.add_argument("-f", "--frame-count", type=int, default=32,
 		help="# of frames used to construct the background model")
-	args = vars(ap.parse_args())
+    args = vars(ap.parse_args())
 
-	for filename in os.listdir("references"):
-		if filename.endswith(".jpeg") or filename.endswith(".jpg"): 
-			name = filename[0:filename.index('.')]
-			img = face_recognition.load_image_file("./references/"+filename)
-			enc = face_recognition.face_encodings(img)[0]
-			known_faces[name] = enc
-			print("Found:", name)
-	known_names = sorted(known_faces.keys())
-	for k in known_names:
-		known_encs.append(known_faces[k])
+    for filename in os.listdir("references"):
+        if filename.endswith(".jpeg") or filename.endswith(".jpg"):
+            name = filename[0:filename.index('.')]
+            img = face_recognition.load_image_file("./references/"+filename)
+            enc = face_recognition.face_encodings(img)[0]
+            known_faces[name] = enc
+            print("Found:", name)
+    known_names = sorted(known_faces.keys())
+    for k in known_names:
+        known_encs.append(known_faces[k])
 
-	# start a thread that will perform motion detection
-	t = threading.Thread(target=detect_faces, args=(
+    # start a thread that will perform motion detection
+    t = threading.Thread(target=detect_faces, args=(
 		args["frame_count"],))
-	t.daemon = True
-	t.start()
+    t.daemon = True
+    t.start()
 
-	# start the flask app
-	app.run(host=args["ip"], port=args["port"], debug=True,
+    # start the flask app
+    app.run(host=args["ip"], port=args["port"], debug=True,
 		threaded=True, use_reloader=False)
 
 # release the video stream pointer
