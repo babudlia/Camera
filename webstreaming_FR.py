@@ -62,8 +62,8 @@ def gstreamer_pipeline(
 # initialize the video stream and allow the camera sensor to
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
-#vs = VideoStream(src=0).start()
-vs = VideoStream(gstreamer_pipeline(flip_method=0)).start()
+vs = VideoStream(src=0).start()
+#vs = VideoStream(gstreamer_pipeline(flip_method=0)).start()
 time.sleep(0.0)
 
 @app.route("/")
