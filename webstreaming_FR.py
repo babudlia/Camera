@@ -42,12 +42,14 @@ def streamer_pipeline(
 	flip_method=0,
 ):
 	return (
-		capture_width,
-		capture_height,
-		framerate,
-		flip_method,
-		display_width,
-		display_height,
+		% (
+			capture_width,
+			capture_height,
+			framerate,
+			flip_method,
+			display_width,
+			display_height,
+		)
 	)
 def gstreamer_pipeline(
     capture_width=1280,
