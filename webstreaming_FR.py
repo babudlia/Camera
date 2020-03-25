@@ -42,7 +42,7 @@ def streamer_pipeline(
 	flip_method=0,
 ):
 	return (
-		% (
+		%(
 			capture_width,
 			capture_height,
 			framerate,
