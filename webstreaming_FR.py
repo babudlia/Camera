@@ -40,7 +40,9 @@ def streamer_pipeline(
 	display_height=720,
 	framerate=60,
 	flip_method=0,
-)
+):
+	return (
+		
 def gstreamer_pipeline(
     capture_width=1280,
     capture_height=720,
@@ -50,6 +52,13 @@ def gstreamer_pipeline(
     flip_method=0,
 ):
     return (
+	    capture_width,
+            capture_height,
+            framerate,
+            flip_method,
+            display_width,
+            display_height,
+    )
         "nvarguscamerasrc ! "
         "video/x-raw(memory:NVMM), "
         "width=(int)%d, height=(int)%d, "
