@@ -80,7 +80,7 @@ def gstreamer_pipeline(
 #vs = VideoStream(usePiCamera=1).start()
 #vs = VideoStream(src=0).start()
 #vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
-vs = VideoStream(src=streamer_pipeline()).start()
+vs = VideoStream(src=streamer_pipeline(flip_method=0)).start()
 time.sleep(0.0)
 
 @app.route("/")
