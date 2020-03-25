@@ -33,6 +33,14 @@ lock = threading.Lock()
 # initialize a flask object
 app = Flask(__name__)
 
+def streamer_pipeline(
+	capture_width=1280,
+	capture_height=720,
+	display_width=1280,
+	display_height=720,
+	framerate=60,
+	flip_method=0,
+)
 def gstreamer_pipeline(
     capture_width=1280,
     capture_height=720,
@@ -63,7 +71,8 @@ def gstreamer_pipeline(
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
 #vs = VideoStream(src=0).start()
-vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
+#vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
+vs = VideoStream(src=streamer_pipeline()).start()
 time.sleep(0.0)
 
 @app.route("/")
