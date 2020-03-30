@@ -38,12 +38,7 @@ def get_jetson_gstreamer_source(capture_width=1280, capture_height=960, display_
     Return an OpenCV-compatible video source description that uses gstreamer to capture video from the camera on a Jetson Nano
     """
     return (
-            f'nvarguscamerasrc ! video/x-raw(memory:NVMM), ' +
-            f'width=(int){capture_width}, height=(int){capture_height}, ' +
-            f'format=(string)NV12, framerate=(fraction){framerate}/1 ! ' +
-            f'nvvidconv flip-method={flip_method} ! ' +
-            f'video/x-raw, width=(int){display_width}, height=(int){display_height}, format=(string)BGRx ! ' +
-            'video/x-raw, format=(string)BGR ! videoconvert ! videoscale ! appsink'
+            "tcambin serial=50910677 ! video/x-raw, format=BGRx,width= 1280,height=960, framerate=20/1 ! videoconvert ! videoscale ! appsink", cv2.CAP_GSTREAMER
             )
 
 def gstreamer_pipeline(
