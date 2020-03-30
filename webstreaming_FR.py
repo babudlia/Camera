@@ -43,7 +43,7 @@ def get_jetson_gstreamer_source(capture_width=1280, capture_height=720, display_
             f'format=(string)NV12, framerate=(fraction){framerate}/1 ! ' +
             f'nvvidconv flip-method={flip_method} ! ' +
             f'video/x-raw, width=(int){display_width}, height=(int){display_height}, format=(string)BGRx ! ' +
-            'videoconvert ! video/x-raw, format=(string)BGR ! appsink'
+            'video/x-raw, format=(string)BGR ! videoconvert ! videoscale ! appsink'
             )
 
 def gstreamer_pipeline(
