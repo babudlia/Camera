@@ -46,7 +46,7 @@ def gstreamer_pipeline(
     capture_height=720,
     display_width=1280,
     display_height=720,
-    framerate=60,
+    framerate=20,
     flip_method=0,
 ):
     return (
@@ -71,8 +71,8 @@ def gstreamer_pipeline(
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
 #vs = VideoStream(src=0).start()
-#vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
-vs = VideoStream(src=get_jetson_gstreamer_source().start()
+vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
+#vs = VideoStream(src=get_jetson_gstreamer_source().start()
 
 time.sleep(0.0)
 
