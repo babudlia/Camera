@@ -76,7 +76,7 @@ def gstreamer_pipeline(
 #vs = VideoStream(usePiCamera=1).start()
 #vs = VideoStream(src=0).start()
 #vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
-vs = VideoStream(src=get_jetson_gstreamer_source().start()
+vs = VideoStream("tcambin serial=50910677 ! video/x-raw, format=BGRx,width= 1280,height=960, framerate=60/1 ! appsink", cv2.CAP_GSTREAMER.start()
 
 time.sleep(0.0)
 
