@@ -75,8 +75,8 @@ def gstreamer_pipeline(
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
 #vs = VideoStream(src=0).start()
-vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
-#vs = VideoStream(src=get_jetson_gstreamer_source().start()
+#vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
+vs = VideoStream(src=get_jetson_gstreamer_source().start()
 
 time.sleep(0.0)
 
