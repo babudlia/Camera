@@ -50,7 +50,7 @@ def gstreamer_pipeline(
     capture_height=720,
     display_width=1280,
     display_height=720,
-    framerate=20,
+    framerate=14,
     flip_method=0,
 ):
     return (
@@ -75,8 +75,8 @@ def gstreamer_pipeline(
 # warmup
 #vs = VideoStream(usePiCamera=1).start()
 #vs = VideoStream(src=0).start()
-#vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
-vs = VideoStream("tcambin serial=50910677 ! video/x-raw, format=BGRx,width= 1280,height=960, framerate=60/1 ! appsink", cv2.CAP_GSTREAMER.start()
+vs = VideoStream(src=gstreamer_pipeline(flip_method=0)).start()
+#vs = VideoStream("tcambin serial=50910677 ! video/x-raw, format=BGRx,width= 1280,height=960, framerate=60/1 ! appsink", cv2.CAP_GSTREAMER.start()
 
 time.sleep(0.0)
 
