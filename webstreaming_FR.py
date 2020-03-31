@@ -112,7 +112,7 @@ def detect_faces(frameCount):
 
             name = "Unknown"
             res = face_recognition.face_distance(known_encs, enc[ix]).tolist()
-            if min(res) < 0.6:
+            if len(res) > 0 and min(res) < 0.6:
                 name = known_names[res.index(min(res))]
 
             print(list(zip(known_names, res)))
